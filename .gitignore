@@ -39,6 +39,10 @@ ScaffoldingReadMe.txt
 # dotenv environment variables file
 .env
 
+# Local secrets
+appsettings.secrets.json
+appsettings.*.secrets.json
+
 # Visual Studio / IDE
 .vs/
 .vscode/
