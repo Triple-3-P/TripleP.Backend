@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="TripleP.Backend.Web\TripleP.Backend.Web.csproj" />
+  <Project Path="TripleP.Backend.RestApi\TripleP.Backend.RestApi.csproj" />
+</Solution>
