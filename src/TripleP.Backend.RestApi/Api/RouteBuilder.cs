@@ -4,7 +4,7 @@ public static class RouteBuilder
 {
     public static void Register(this IEndpointRouteBuilder routeBuilder)
     {
-        var group = routeBuilder.MapGroup("Health");
+        var group = routeBuilder.MapGroup("api");
 
         Health.RouteBuilder.Register(group);
     }
