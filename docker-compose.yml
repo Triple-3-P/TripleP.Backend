@@ -1,0 +1,16 @@
+services:
+  app:
+    build:
+      context: ./src
+      dockerfile: TripleP.Backend.Web/Dockerfile
+    container_name: triplep-app
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    ports:
+      - "8080:8080"
+
+# The database service (PostgreSQL) will be added here later:
+#  - a db service with the postgres image, port 5432, a healthcheck and a volume
+#  - depends_on: db (condition: service_healthy) on the app service
+#  - the connection string in the app environment:
+#    ConnectionStrings__PostgresConnection: Host=db;Port=5432;Database=triplep;Username=triplep;Password=triplep

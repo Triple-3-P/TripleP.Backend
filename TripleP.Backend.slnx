@@ -1,4 +1,11 @@
 <Solution>
-  <Project Path="TripleP.Backend.Web\TripleP.Backend.Web.csproj" />
-  <Project Path="TripleP.Backend.RestApi\TripleP.Backend.RestApi.csproj" />
+  <Project Path="src\TripleP.Backend.Abstractions\TripleP.Backend.Abstractions.csproj" />
+  <Project Path="src\TripleP.Backend.Database\TripleP.Backend.Database.csproj" />
+  <Project Path="src\TripleP.Backend.Logic\TripleP.Backend.Logic.csproj" />
+  <Project Path="src\TripleP.Backend.Web\TripleP.Backend.Web.csproj" />
+  <Folder Name="/tests/">
+    <Project Path="tests\TripleP.Backend.Tests.Logic\TripleP.Backend.Tests.Logic.csproj" />
+    <Project Path="tests\TripleP.Backend.Tests.Database\TripleP.Backend.Tests.Database.csproj" />
+  </Folder>
+  <Project Path="src\TripleP.Backend.RestApi\TripleP.Backend.RestApi.csproj" />
 </Solution>

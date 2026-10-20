@@ -16,6 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TripleP.Backend.Abstractions\TripleP.Backend.Abstractions.csproj" />
+    <ProjectReference Include="..\TripleP.Backend.Database\TripleP.Backend.Database.csproj" />
+    <ProjectReference Include="..\TripleP.Backend.Logic\TripleP.Backend.Logic.csproj" />
     <ProjectReference Include="..\TripleP.Backend.RestApi\TripleP.Backend.RestApi.csproj" />
   </ItemGroup>
 
