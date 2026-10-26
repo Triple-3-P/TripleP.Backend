@@ -4,15 +4,13 @@ services:
       context: ./src
       dockerfile: TripleP.Backend.Web/Dockerfile
     container_name: triplep-app
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__PostgresConnection: Host=db;Port=5432;Database=triplep;Username=triplep;Password=triplep
     ports:
       - "8080:8080"
     # Apply pending EF Core migrations with the bundle built in the Dockerfile, then start the API.
+    # The connection string comes from the appsettings.json published next to the bundle.
     entrypoint: ["/bin/sh", "-c"]
     command:
-      - './efbundle --connection "$$ConnectionStrings__PostgresConnection" && exec dotnet TripleP.Backend.Web.dll'
+      - './efbundle && exec dotnet TripleP.Backend.Web.dll'
     depends_on:
       db:
         condition: service_healthy

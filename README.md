@@ -12,13 +12,13 @@ dotnet run --project src/TripleP.Backend.Web
 
 The HTTP profile serves the API at http://localhost:5047. In Development the OpenAPI document and the Scalar API reference are available at http://localhost:5047/scalar.
 
-The database connection string is required configuration and is read from `ConnectionStrings:PostgresConnection`. It is not committed: set it through environment variables, `appsettings.Development.secrets.json` (gitignored) or user secrets:
+The database connection string is required configuration and is read from `ConnectionStrings:PostgresConnection`. The default in `appsettings.json` points at the Docker Compose database (`Host=db`) with local development-only credentials; running the API outside compose needs an override, for example through user secrets or environment variables:
 
 ```sh
 dotnet user-secrets set "ConnectionStrings:PostgresConnection" "Host=localhost;Port=5432;Database=triplep;Username=triplep;Password=triplep" --project src/TripleP.Backend.Web
 ```
 
-The host fails fast with a clear error when the connection string is missing.
+The host fails fast with a clear error when the connection string is missing or blank.
 
 ### Database and migrations
 
@@ -32,9 +32,9 @@ dotnet ef migrations add <Name> --project src/TripleP.Backend.Database --startup
 dotnet ef database update --project src/TripleP.Backend.Database --startup-project src/TripleP.Backend.Web
 ```
 
-The tooling starts the Web host at design time, so it needs the same configuration as the app. It runs as `Development` by default, where the connection string is read from user secrets; otherwise set `ConnectionStrings__PostgresConnection`. `database update` needs a reachable PostgreSQL; pass `--connection "<connection string>"` to target another host, for example from inside a container.
+The tooling starts the Web host at design time, so it needs the same configuration as the app. It runs as `Development` by default, so `appsettings.json` and user secrets apply; because the committed default points at the compose host (`Host=db`), pass `--connection "<connection string>"` or set `ConnectionStrings__PostgresConnection` when targeting a database reachable from your machine. `database update` needs a reachable PostgreSQL.
 
-The API itself does not apply migrations. `docker-compose.yml` overrides the `app` service command to run the EF Core migrations bundle (`./efbundle`, built in the Dockerfile `migrations` stage) with `ConnectionStrings__PostgresConnection` and only then start the API. Running the app outside compose (for example `dotnet run`) still requires the explicit `dotnet ef database update` command above.
+The API itself does not apply migrations. `docker-compose.yml` overrides the `app` service command to run the EF Core migrations bundle (`./efbundle`, built in the Dockerfile `migrations` stage) and only then start the API; the bundle reads the connection string from the `appsettings.json` published next to it. Running the app outside compose (for example `dotnet run`) still requires the explicit `dotnet ef database update` command above.
 
 ### Identity endpoints
 
@@ -73,7 +73,7 @@ dotnet test tests/TripleP.Backend.Tests.Database
 docker compose up --build
 ```
 
-The API is then available at http://localhost:8080 (Scalar at http://localhost:8080/scalar). The image is built from `src/TripleP.Backend.Web/Dockerfile` with the `./src` build context. Compose starts a PostgreSQL 17 service (`db`, local credentials in `docker-compose.yml` for development only) with its data directory on `tmpfs`: the database is intentionally ephemeral, so every start begins empty and the migrations bundle reapplies the schema (and future seed data) instead of reusing stale local data. `ConnectionStrings__PostgresConnection` is passed to the app. Once the `db` healthcheck passes, the `app` container applies pending migrations with the EF Core bundle and then starts the API. The bundle is framework-dependent and runs on the .NET runtime of the base image; for production, prefer a separate one-shot migration step over starting several replicas that migrate concurrently. The container listens on 8080 (the `ASPNETCORE_HTTP_PORTS` default of the base image), which compose publishes as `8080:8080`.
+The API is then available at http://localhost:8080 (Scalar at http://localhost:8080/scalar). The image is built from `src/TripleP.Backend.Web/Dockerfile` with the `./src` build context. Compose starts a PostgreSQL 17 service (`db`, local credentials in `docker-compose.yml` for development only) with its data directory on `tmpfs`: the database is intentionally ephemeral, so every start begins empty and the migrations bundle reapplies the schema (and future seed data) instead of reusing stale local data. The app and the bundle read the connection string from the `appsettings.json` baked into the image (`Host=db`); override `ConnectionStrings__PostgresConnection` to target another database. Once the `db` healthcheck passes, the `app` container applies pending migrations with the EF Core bundle and then starts the API. The bundle is framework-dependent and runs on the .NET runtime of the base image; for production, prefer a separate one-shot migration step over starting several replicas that migrate concurrently. The container listens on 8080 (the `ASPNETCORE_HTTP_PORTS` default of the base image), which compose publishes as `8080:8080`.
 
 Because the database lives in `tmpfs`, stopping the stack wipes its data; the next `docker compose up --build` starts from an empty database and reapplies migrations. Do not restart only `db` while `app` keeps running: the API would hold a connection pool to a database whose schema has just disappeared.
 

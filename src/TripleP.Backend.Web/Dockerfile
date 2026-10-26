@@ -38,9 +38,6 @@ RUN dotnet publish "./TripleP.Backend.Web.csproj" -c $BUILD_CONFIGURATION -o /ap
 FROM build AS migrations
 ARG BUILD_CONFIGURATION=Release
 ARG EF_TOOL_VERSION=10.0.13
-# The design-time host validates the connection string even though the bundle is only
-# generated here and never connects to this placeholder database.
-ENV ConnectionStrings__PostgresConnection="Host=localhost;Port=5432;Database=triplep;Username=triplep;Password=triplep"
 RUN dotnet tool install --tool-path /tools dotnet-ef --version $EF_TOOL_VERSION
 RUN /tools/dotnet-ef migrations bundle \
     --project "/src/TripleP.Backend.Database/TripleP.Backend.Database.csproj" \

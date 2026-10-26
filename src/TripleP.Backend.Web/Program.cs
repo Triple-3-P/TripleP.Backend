@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.Sources.Clear();
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true);
+    .AddJsonFile("appsettings.secrets.json", optional: true);
 
 if (builder.Environment.IsDevelopment())
 {
@@ -14,9 +14,6 @@ if (builder.Environment.IsDevelopment())
 }
 
 builder.Configuration
-    // The framework reads host settings such as URLS, HTTP_PORTS and HTTPS_PORTS under
-    // their unprefixed names, so ASPNETCORE_* variables are also exposed without the prefix.
-    .AddEnvironmentVariables(prefix: "ASPNETCORE_")
     .AddEnvironmentVariables();
 
 // Add services to the container.
