@@ -56,13 +56,14 @@ The standard ASP.NET Identity API endpoints are mapped next to the rest of the A
 
 ### Database tests
 
-`tests/TripleP.Backend.Tests.Database` contains only database-backed tests. The `PostgresDatabaseFixture` collection fixture drops and recreates a dedicated `triplep_test` database and applies the committed migrations before the tests run, so it needs a reachable PostgreSQL. Only the host, port and credentials are taken from the connection string (`ConnectionStrings:TestPostgresConnection`, falling back to `ConnectionStrings:PostgresConnection`); the database name is always forced to `triplep_test` and never touches real data.
+`tests/TripleP.Backend.Tests.Database` contains only database-backed tests and runs against a real PostgreSQL. `Startup` loads `tests/TripleP.Backend.Tests.Database/appsettings.json` and registers the real services through `AddTriplePDatabase`, so the tests use the same wiring as the application. Environment variables override the file (for example `ConnectionStrings__PostgresConnection` in CI). There is no fixture and the tests do not create or migrate the database: the schema must be applied before the run.
 
-Run them locally against the compose database:
+Run them locally against the compose database (`appsettings.json` already points at `triplep_test`):
 
 ```sh
 docker compose up -d db
-dotnet user-secrets set "ConnectionStrings:PostgresConnection" "Host=localhost;Port=5432;Database=triplep;Username=triplep;Password=triplep" --project tests/TripleP.Backend.Tests.Database
+dotnet tool restore
+dotnet ef database update --project src/TripleP.Backend.Database --startup-project src/TripleP.Backend.Web --connection "Host=localhost;Port=5432;Database=triplep_test;Username=triplep;Password=triplep"
 dotnet test tests/TripleP.Backend.Tests.Database
 ```
 

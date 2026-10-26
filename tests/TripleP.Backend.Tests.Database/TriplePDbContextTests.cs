@@ -1,24 +1,25 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using TripleP.Backend.Abstractions.Database.Entities;
+using TripleP.Backend.Database.Context;
 using TripleP.Backend.Database.Identity;
 
 namespace TripleP.Backend.Tests.Database;
 
-[Collection(PostgresDatabaseCollection.Name)]
-public class TriplePDbContextTests
+public class TriplePDbContextTests : IDisposable
 {
-    private readonly PostgresDatabaseFixture _fixture;
+    private readonly Startup _startup = new();
 
-    public TriplePDbContextTests(PostgresDatabaseFixture fixture)
-    {
-        _fixture = fixture;
-    }
+    public void Dispose() => _startup.Dispose();
 
     [Fact]
     public void Migrations_are_applied_to_the_test_database()
     {
-        var appliedMigrations = _fixture.Context.Database.GetAppliedMigrations();
+        using var scope = _startup.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<TriplePDbContext>();
+
+        var appliedMigrations = context.Database.GetAppliedMigrations();
 
         Assert.Contains(appliedMigrations, migration => migration.EndsWith("InitialCreate", StringComparison.Ordinal));
     }
@@ -33,7 +34,10 @@ public class TriplePDbContextTests
     [InlineData(typeof(IdentityUserToken<string>), "AspNetUserTokens")]
     public void Entity_is_mapped_to_expected_table(Type entityType, string tableName)
     {
-        var entity = _fixture.Context.Model.FindEntityType(entityType);
+        using var scope = _startup.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<TriplePDbContext>();
+
+        var entity = context.Model.FindEntityType(entityType);
 
         Assert.NotNull(entity);
         Assert.Equal(tableName, entity.GetTableName());
@@ -42,7 +46,10 @@ public class TriplePDbContextTests
     [Fact]
     public void User_entity_is_exposed_by_the_context()
     {
-        var entity = _fixture.Context.Model.FindEntityType(typeof(User));
+        using var scope = _startup.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<TriplePDbContext>();
+
+        var entity = context.Model.FindEntityType(typeof(User));
 
         Assert.NotNull(entity);
         Assert.Equal(nameof(User.Id), entity.FindPrimaryKey()!.Properties[0].Name);
@@ -51,7 +58,10 @@ public class TriplePDbContextTests
     [Fact]
     public void ApplicationUser_exposes_identity_properties()
     {
-        var entity = _fixture.Context.Model.FindEntityType(typeof(ApplicationUser));
+        using var scope = _startup.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<TriplePDbContext>();
+
+        var entity = context.Model.FindEntityType(typeof(ApplicationUser));
 
         Assert.NotNull(entity);
         Assert.Equal("Id", entity.FindPrimaryKey()!.Properties[0].Name);
@@ -63,7 +73,10 @@ public class TriplePDbContextTests
     [Fact]
     public void ApplicationUser_has_unique_index_on_normalized_user_name()
     {
-        var entity = _fixture.Context.Model.FindEntityType(typeof(ApplicationUser));
+        using var scope = _startup.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<TriplePDbContext>();
+
+        var entity = context.Model.FindEntityType(typeof(ApplicationUser));
 
         Assert.NotNull(entity);
         Assert.Contains(

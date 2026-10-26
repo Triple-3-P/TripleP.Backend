@@ -2,24 +2,21 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using TripleP.Backend.Database.Context;
 using TripleP.Backend.Database.Identity;
 
 namespace TripleP.Backend.Tests.Database;
 
-[Collection(PostgresDatabaseCollection.Name)]
-public class ApplicationUserStoreTests
+public class ApplicationUserStoreTests : IDisposable
 {
-    private readonly PostgresDatabaseFixture _fixture;
+    private readonly Startup _startup = new();
 
-    public ApplicationUserStoreTests(PostgresDatabaseFixture fixture)
-    {
-        _fixture = fixture;
-    }
+    public void Dispose() => _startup.Dispose();
 
     [Fact]
     public async Task UserManager_creates_and_finds_user_in_postgres()
     {
-        using var scope = _fixture.Services.CreateScope();
+        using var scope = _startup.Services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
         var userName = $"user-{Guid.NewGuid():N}";
@@ -43,8 +40,9 @@ public class ApplicationUserStoreTests
     [Fact]
     public async Task Duplicate_normalized_user_name_hits_unique_index()
     {
-        using var scope = _fixture.Services.CreateScope();
+        using var scope = _startup.Services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var context = scope.ServiceProvider.GetRequiredService<TriplePDbContext>();
 
         var userName = $"user-{Guid.NewGuid():N}";
         var existing = new ApplicationUser
@@ -67,20 +65,20 @@ public class ApplicationUserStoreTests
             SecurityStamp = Guid.NewGuid().ToString(),
         };
 
-        _fixture.Context.Users.Add(duplicate);
+        context.Users.Add(duplicate);
 
         try
         {
             // Bypasses UserManager's duplicate check so the PostgreSQL index itself is exercised.
             var exception = await Assert.ThrowsAsync<DbUpdateException>(
-                () => _fixture.Context.SaveChangesAsync());
+                () => context.SaveChangesAsync());
 
             var postgresException = Assert.IsType<PostgresException>(exception.InnerException);
             Assert.Equal(PostgresErrorCodes.UniqueViolation, postgresException.SqlState);
         }
         finally
         {
-            _fixture.Context.Entry(duplicate).State = EntityState.Detached;
+            context.Entry(duplicate).State = EntityState.Detached;
             await userManager.DeleteAsync(existing);
         }
     }

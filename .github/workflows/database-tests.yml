@@ -23,7 +23,7 @@ jobs:
           --health-retries 5
 
     env:
-      ConnectionStrings__PostgresConnection: Host=localhost;Port=5432;Database=triplep;Username=triplep;Password=triplep
+      ConnectionStrings__PostgresConnection: Host=localhost;Port=5432;Database=triplep_test;Username=triplep;Password=triplep
 
     steps:
       - name: Checkout
