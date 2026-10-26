@@ -1,0 +1,56 @@
+name: database-tests
+
+on:
+  workflow_call:
+
+jobs:
+  database-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: triplep
+          POSTGRES_USER: triplep
+          POSTGRES_PASSWORD: triplep
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U triplep -d triplep"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      ConnectionStrings__PostgresConnection: Host=localhost;Port=5432;Database=triplep;Username=triplep;Password=triplep
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore tools
+        run: dotnet tool restore
+
+      - name: Restore
+        run: dotnet restore TripleP.Backend.slnx
+
+      - name: Build
+        run: dotnet build TripleP.Backend.slnx -c Release --no-restore
+
+      - name: Apply migrations
+        run: >-
+          dotnet ef database update
+          --project src/TripleP.Backend.Database
+          --startup-project src/TripleP.Backend.Web
+          --configuration Release
+          --no-build
+          --connection "${{ env.ConnectionStrings__PostgresConnection }}"
+
+      - name: Database tests
+        run: dotnet test tests/TripleP.Backend.Tests.Database -c Release --no-build

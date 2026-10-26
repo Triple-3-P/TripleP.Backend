@@ -6,11 +6,32 @@ services:
     container_name: triplep-app
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__PostgresConnection: Host=db;Port=5432;Database=triplep;Username=triplep;Password=triplep
     ports:
       - "8080:8080"
+    # Apply pending EF Core migrations with the bundle built in the Dockerfile, then start the API.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - './efbundle --connection "$$ConnectionStrings__PostgresConnection" && exec dotnet TripleP.Backend.Web.dll'
+    depends_on:
+      db:
+        condition: service_healthy
 
-# The database service (PostgreSQL) will be added here later:
-#  - a db service with the postgres image, port 5432, a healthcheck and a volume
-#  - depends_on: db (condition: service_healthy) on the app service
-#  - the connection string in the app environment:
-#    ConnectionStrings__PostgresConnection: Host=db;Port=5432;Database=triplep;Username=triplep;Password=triplep
+  db:
+    image: postgres:17
+    container_name: triplep-db
+    environment:
+      POSTGRES_DB: triplep
+      POSTGRES_USER: triplep
+      POSTGRES_PASSWORD: triplep
+    ports:
+      - "5432:5432"
+    # Data lives in RAM only: every start begins with an empty database, so the app
+    # re-applies migrations (and later seeds) instead of reusing stale local data.
+    tmpfs:
+      - /var/lib/postgresql/data:size=1g
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U triplep -d triplep"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
