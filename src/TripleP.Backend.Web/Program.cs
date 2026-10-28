@@ -3,15 +3,9 @@ using TripleP.Backend.Database.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.Sources.Clear();
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("appsettings.secrets.json", optional: true);
-
-if (builder.Environment.IsDevelopment())
-{
-    builder.Configuration.AddUserSecrets(typeof(Program).Assembly, optional: true);
-}
 
 builder.Configuration
     .AddEnvironmentVariables();
@@ -39,6 +33,8 @@ app.UseTriplePEndpoints();
 
 // Standard ASP.NET Identity endpoints (register, login, refresh, email confirmation,
 // password reset, 2FA and account info) under the same /api prefix as the rest of the API.
-app.MapGroup("api").MapIdentityApi<ApplicationUser>();
+app.MapGroup("api")
+    .MapIdentityApi<ApplicationUser>()
+    .WithTags("Identity");
 
 app.Run();

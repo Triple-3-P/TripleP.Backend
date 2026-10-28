@@ -4,6 +4,11 @@ services:
       context: ./src
       dockerfile: TripleP.Backend.Web/Dockerfile
     container_name: triplep-app
+    user: root
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - dataprotection-keys:/home/app/.aspnet/DataProtection-Keys
     ports:
       - "8080:8080"
     # Apply pending EF Core migrations with the bundle built in the Dockerfile, then start the API.
@@ -33,3 +38,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+volumes:
+  dataprotection-keys:
