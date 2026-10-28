@@ -22,9 +22,6 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-    env:
-      ConnectionStrings__PostgresConnection: Host=localhost;Port=5432;Database=triplep_test;Username=triplep;Password=triplep
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,7 +47,7 @@ jobs:
           --startup-project src/TripleP.Backend.Web
           --configuration Release
           --no-build
-          --connection "${{ env.ConnectionStrings__PostgresConnection }}"
+          --connection "Host=localhost;Port=5432;Database=triplep_test;Username=triplep;Password=triplep"
 
       - name: Database tests
         run: dotnet test tests/TripleP.Backend.Tests.Database -c Release --no-build
