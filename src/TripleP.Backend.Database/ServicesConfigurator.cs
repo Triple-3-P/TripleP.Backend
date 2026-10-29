@@ -1,11 +1,14 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace TripleP.Backend.Database
 {
     internal static class ServicesConfigurator
     {
-        public static void Configure(IServiceCollection services)
+        public static void Configure(IServiceCollection services, IConfiguration configuration)
         {
+            Context.ServicesConfigurator.Configure(services, configuration);
+            Identity.ServicesConfigurator.Configure(services);
             Repositories.ServicesConfigurator.Configure(services);
         }
     }
@@ -17,9 +20,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
     public static class ServiceCollectionExtension
     {
-        public static IServiceCollection AddTriplePDatabase(this IServiceCollection services)
+        public static IServiceCollection AddTriplePDatabase(this IServiceCollection services, IConfiguration configuration)
         {
-            ServicesConfigurator.Configure(services);
+            ServicesConfigurator.Configure(services, configuration);
             return services;
         }
     }

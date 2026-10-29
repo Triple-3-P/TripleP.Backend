@@ -182,10 +182,10 @@ dotnet format TripleP.Backend.slnx --verify-no-changes
 ### Git workflow
 
 - Never commit or push directly to `main`; update it only by merging pull requests.
-- Work autonomously on feature branches using `Domain-Feature-Implement` or `Domain-Fix`.
+- Work autonomously on feature branches named `feature/<short-name>` or `issue/<number>`. For features, use lowercase letters, hyphens and numbers only (for example `feature/aspnet-identity`). Do not use the `Domain-Feature-Implement` or `Domain-Fix` naming style.
 - When work is driven by a GitHub issue, name the branch after it as `issue/<number>` (for example `issue/42`).
 - Use simple English commit messages such as `add feature`, `refactor something` or `drop filename`.
-- Fetch updates from the frontend repository (`../TripleP.Frontend`) before changing an API contract. Inspect the appropriate remote revision without discarding or overwriting the frontend team's local changes.
+- Never commit or push without an explicit request from the user. Do not create commits or push changes on your own initiative.
 - Do not commit build output (`bin/`, `obj/`), user secrets, IDE files or local databases.
 
 ## 12. Definition of Done (for AI agents and humans)
