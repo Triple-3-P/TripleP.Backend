@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using Scalar.AspNetCore;
+using TripleP.Backend.Database.Context;
 using TripleP.Backend.Database.Identity;
+using TripleP.Backend.Web.Infrastructure.Email;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +19,18 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddTriplePLogic();
 builder.Services.AddTriplePDatabase(builder.Configuration);
+
+// Registers Identity together with the token/cookie authentication schemes the
+// standard Identity API endpoints (MapIdentityApi) need.
+builder.Services
+    .AddIdentityApiEndpoints<ApplicationUser>()
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<TriplePDbContext>();
+
+// UseAuthorization in the pipeline requires these services; Identity does not register them.
+builder.Services.AddAuthorization();
+
+builder.Services.AddTransient<IEmailSender<ApplicationUser>, NoOpEmailSender>();
 
 var app = builder.Build();
 

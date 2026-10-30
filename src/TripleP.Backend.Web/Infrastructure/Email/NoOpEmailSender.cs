@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Identity;
+using TripleP.Backend.Database.Identity;
 
-namespace TripleP.Backend.Database.Identity;
+namespace TripleP.Backend.Web.Infrastructure.Email;
 
 /// <summary>
 /// Placeholder sender for the standard Identity API endpoints until a real email provider is
-/// configured. It intentionally delivers nothing; replace it with a real implementation.
+/// configured. It intentionally delivers nothing.
 /// </summary>
 public sealed class NoOpEmailSender : IEmailSender<ApplicationUser>
 {
