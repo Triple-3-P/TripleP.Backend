@@ -8,7 +8,6 @@ namespace TripleP.Backend.Database
         public static void Configure(IServiceCollection services, IConfiguration configuration)
         {
             Context.ServicesConfigurator.Configure(services, configuration);
-            Identity.ServicesConfigurator.Configure(services);
             Repositories.ServicesConfigurator.Configure(services);
         }
     }
